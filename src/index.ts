@@ -1,6 +1,33 @@
-import data from './data.json';
+// import data from './data.json';
 import * as d3 from "d3";
 import { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+import times  from 'lodash/times';
+
+const data = {
+    nodes: [],
+    links: []
+};
+
+const randomStr = () =>  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+const randInt = (max: number) => Math.floor(Math.random() * max);
+const NODES = 100;
+const LINKS = 5;
+
+times(NODES, (i) => {
+    data.nodes.push({
+        id: i,
+        name: randomStr()
+    });
+
+    times(randInt(LINKS), () => {
+        data.links.push({
+            source: i,
+            target: randInt(NODES)
+        });
+    });
+});
+
+console.log(data);
 
 interface MyNode extends SimulationNodeDatum {
     id: number;
@@ -9,8 +36,8 @@ interface MyNode extends SimulationNodeDatum {
 
 // set the dimensions and margins of the graph
 const margin = { top: 10, right: 30, bottom: 30, left: 40 },
-    width = 400 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    width = 1300 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select('#my_dataviz')
