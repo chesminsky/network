@@ -1,6 +1,6 @@
 // import data from './data.json';
 import * as d3 from 'd3';
-import { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
+import { SimulationNodeDatum, SimulationLinkDatum, Selection } from 'd3';
 import times from 'lodash/times';
 
 interface MyNode extends SimulationNodeDatum {
@@ -61,17 +61,18 @@ function renderSvg() {
     const data = mockData();
 
     // append the svg object to the body of the page
-    const svg = d3.select('#svg')
-        .classed('hidden', false)
-        .append('svg')
+    const svg: Selection<Element, any, HTMLElement, any> = d3.select('#svg');
+
+    svg.classed('hidden', false)
         .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
+        .attr('height', height + margin.top + margin.bottom);
+
+    const g = svg.append('g')
         .attr('transform',
             'translate(' + margin.left + ',' + margin.top + ')');
 
     // Initialize the links
-    const link = svg
+    const link = g
         .selectAll('line')
         .data<SimulationLinkDatum<MyNode>>(data.links)
         .enter()
@@ -79,7 +80,7 @@ function renderSvg() {
         .style('stroke', '#aaa')
 
     // Initialize the nodes
-    const node = svg
+    const node = g
         .selectAll('circle')
         .data<MyNode>(data.nodes)
         .enter()
@@ -110,14 +111,29 @@ function renderSvg() {
                 return d.y;
             });
     });
+
+    d3.zoom().on('zoom', function () {
+        g.attr('transform', d3.event.transform);
+    })(svg);
 }
 
 function renderCanvas() {
-    const canvas = <any>d3.select('#canvas').classed('hidden', false);
-    const width = canvas.attr('width');
-    const height = canvas.attr('height');
+    const canvas = <Selection<Element, any, HTMLElement, any>>d3.select('#canvas').classed('hidden', false);
+    const width = Number(canvas.attr('width'));
+    const height = Number(canvas.attr('height'));
     const ctx = (<HTMLCanvasElement>canvas.node()).getContext('2d');
     const data = mockData();
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.beginPath();
+
+        ctx.strokeStyle = '#aaa';
+        data.links.forEach(drawLink);
+        ctx.stroke();
+
+        data.nodes.forEach(drawNode);
+    }
 
     function drawNode(d) {
         ctx.beginPath();
@@ -132,16 +148,17 @@ function renderCanvas() {
         ctx.lineTo(l.target.x, l.target.y);
     }
 
-    simulateForce(data, function() {
+    simulateForce(data, draw);
+
+    d3.zoom().on('zoom', function () {
+        const transform = d3.event.transform;
+        ctx.save();
         ctx.clearRect(0, 0, width, height);
-        ctx.beginPath();
-
-        ctx.strokeStyle = '#aaa';
-        data.links.forEach(drawLink);
-        ctx.stroke();
-
-        data.nodes.forEach(drawNode);
-    });
+        ctx.translate(transform.x, transform.y);
+        ctx.scale(transform.k, transform.k);
+        draw();
+        ctx.restore();
+    })(canvas);
 }
 
 function clear() {
