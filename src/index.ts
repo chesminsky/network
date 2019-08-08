@@ -1,102 +1,143 @@
 // import data from './data.json';
 import * as d3 from "d3";
 import { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
-import times  from 'lodash/times';
-
-const data = {
-    nodes: [],
-    links: []
-};
-
-const randomStr = () =>  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-const randInt = (max: number) => Math.floor(Math.random() * max);
-const NODES = 100;
-const LINKS = 5;
-
-times(NODES, (i) => {
-    data.nodes.push({
-        id: i,
-        name: randomStr()
-    });
-
-    times(randInt(LINKS), () => {
-        data.links.push({
-            source: i,
-            target: randInt(NODES)
-        });
-    });
-});
-
-console.log(data);
+import times from 'lodash/times';
 
 interface MyNode extends SimulationNodeDatum {
     id: number;
     name: string;
 }
 
+type MockedData = { nodes: MyNode[], links: Array<{ source: number; target: number }> };
+type MockDataOptions = { numberOfNodes: number; numberOfLinks: number };
+
+// util
+const randomStr = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+const randInt = (max: number) => Math.floor(Math.random() * max);
+
+function mockData(): MockedData {
+    const data = {
+        nodes: [],
+        links: []
+    };
+
+    const opts = getFormData();
+
+    const noLinks = [];
+
+    times(opts.numberOfNodes, (i) => {
+        data.nodes.push({
+            id: i,
+            name: randomStr()
+        });
+
+        const linksOfNode = randInt(opts.numberOfLinks);
+
+        if (!linksOfNode) {
+            noLinks.push(i);
+        } else {
+            times(linksOfNode, () => {
+
+                const targetId = randInt(opts.numberOfNodes);
+
+                if (!noLinks.includes(targetId)) {
+                    data.links.push({
+                        source: i,
+                        target: targetId
+                    });
+                }
+            });
+        }
+    });
+
+    console.log('no links ', noLinks);
+    return data;
+}
+
+function render() {
+
+    const data = mockData();
+
+    console.log('data', data);
+
+    function ticked() {
+        link
+            .attr('x1', (d) => {
+                return (<MyNode>d.source).x;
+            })
+            .attr('y1', (d) => {
+                return (<MyNode>d.source).y;
+            })
+            .attr('x2', (d) => {
+                return (<MyNode>d.target).x;
+            })
+            .attr('y2', (d) => {
+                return (<MyNode>d.target).y;
+            });
+
+        node
+            .attr('cx', (d) => {
+                return d.x;
+            })
+            .attr('cy', (d) => {
+                return d.y;
+            });
+    }
+
+    // append the svg object to the body of the page
+    const svg = d3.select('#chart')
+        .html('')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform',
+            'translate(' + margin.left + ',' + margin.top + ')');
+
+    // Initialize the links
+    const link = svg
+        .selectAll('line')
+        .data<SimulationLinkDatum<MyNode>>(data.links)
+        .enter()
+        .append('line')
+        .style('stroke', '#aaa')
+
+    // Initialize the nodes
+    const node = svg
+        .selectAll('circle')
+        .data<MyNode>(data.nodes)
+        .enter()
+        .append('circle')
+        .attr('r', 10)
+        .style('fill', '#69b3a2')
+
+
+    d3.forceSimulation<MyNode>(data.nodes)
+        .force('link', d3.forceLink()
+            .id((d: MyNode) => { return String(d.id); })
+            .links(data.links)
+        )
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .on('tick', ticked);
+}
+
+function getFormData(): MockDataOptions {
+    return {
+        numberOfNodes: Number((<HTMLInputElement>document.querySelector('#nodes')).value),
+        numberOfLinks: Number((<HTMLInputElement>document.querySelector('#links')).value)
+    }
+} 
+
 // set the dimensions and margins of the graph
 const margin = { top: 10, right: 30, bottom: 30, left: 40 },
     width = 1300 - margin.left - margin.right,
     height = 800 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
-const svg = d3.select('#my_dataviz')
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform',
-        'translate(' + margin.left + ',' + margin.top + ')');
+render();
 
-// Initialize the links
-const link = svg
-    .selectAll('line')
-    .data<SimulationLinkDatum<MyNode>>(data.links)
-    .enter()
-    .append('line')
-    .style('stroke', '#aaa')
+document.querySelector('#form').addEventListener('submit', (e) => {
+    e.preventDefault();
 
-// Initialize the nodes
-const node = svg
-    .selectAll('circle')
-    .data<MyNode>(data.nodes)
-    .enter()
-    .append('circle')
-    .attr('r', 20)
-    .style('fill', '#69b3a2')
-
-// Let's list the force we wanna apply on the network
-d3.forceSimulation<MyNode>(data.nodes)                // Force algorithm is applied to data.nodes
-    .force('link', d3.forceLink()                               // This force provides links between nodes
-        .id((d: MyNode) => { return String(d.id); })                     // This provide  the id of a node
-        .links(data.links)                                    // and this the list of links
-    )
-    .force('charge', d3.forceManyBody().strength(-400))         // This adds repulsion between nodes. Play with the -400 for the repulsion strength
-    .force('center', d3.forceCenter(width / 2, height / 2))     // This force attracts nodes to the center of the svg area
-    .on('tick', ticked);
-
-// This function is run at each iteration of the force algorithm, updating the nodes position.
-function ticked() {
-    link
-        .attr('x1', (d) => { 
-            return (<MyNode>d.source).x; 
-        })
-        .attr('y1', (d) => {
-            return (<MyNode>d.source).y;
-        })
-        .attr('x2', (d) => {
-            return (<MyNode>d.target).x;
-        })
-        .attr('y2', (d) => {
-            return (<MyNode>d.target).y;
-        });
-
-    node
-        .attr('cx', (d) => {
-            return d.x + 6;
-        })
-        .attr('cy', (d) => {
-            return d.y - 6;
-        });
-}
-
+    render();
+});
