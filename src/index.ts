@@ -50,7 +50,6 @@ function mockData(): MockedData {
         }
     });
 
-    console.log('no links ', noLinks);
     return data;
 }
 
@@ -84,6 +83,8 @@ function render() {
             });
     }
 
+    const RADIUS = 20;
+
     // append the svg object to the body of the page
     const svg = d3.select('#chart')
         .html('')
@@ -108,16 +109,17 @@ function render() {
         .data<MyNode>(data.nodes)
         .enter()
         .append('circle')
-        .attr('r', 10)
+        .attr('r', RADIUS)
         .style('fill', '#69b3a2')
 
-
+    const chargeStr = Number((<HTMLInputElement>document.querySelector('#strenght')).value);
     d3.forceSimulation<MyNode>(data.nodes)
         .force('link', d3.forceLink()
             .id((d: MyNode) => { return String(d.id); })
             .links(data.links)
         )
-        .force('charge', d3.forceManyBody().strength(-200))
+        .force('collide', d3.forceCollide(RADIUS * 2))
+        .force('charge', d3.forceManyBody().strength(-chargeStr))
         .force('center', d3.forceCenter(width / 2, height / 2))
         .on('tick', ticked);
 }
