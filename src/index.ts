@@ -1,60 +1,15 @@
 // import data from './data.json';
 import * as d3 from 'd3';
-import { SimulationNodeDatum, SimulationLinkDatum, Selection } from 'd3';
-import times from 'lodash/times';
-
-interface MyNode extends SimulationNodeDatum {
-    id: number;
-    name: string;
-}
-
-type MockedData = { nodes: MyNode[], links: Array<{ source: number; target: number }> };
-type MockDataOptions = { numberOfNodes: number; numberOfLinks: number };
-
-// util
-const randomStr = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-const randInt = (max: number) => Math.floor(Math.random() * max);
+import { SimulationLinkDatum, Selection } from 'd3';
+import { mockData } from './mock';
+import { MyNode } from './types';
+import { icons } from './icons';
 
 //const
 const RADIUS = 20;
-
-function mockData(): MockedData {
-    const data = {
-        nodes: [],
-        links: []
-    };
-
-    const opts = getFormData();
-    const memo = {}
-
-    times(opts.numberOfNodes, (i) => {
-        data.nodes.push({
-            id: i,
-            name: randomStr()
-        });
-
-        const linksOfNode = randInt(opts.numberOfLinks);
-
-        times(linksOfNode, () => {
-
-            const targetId = randInt(opts.numberOfNodes);
-
-            if (!memo[targetId]) {
-                memo[targetId] = 0;
-            }
-            memo[targetId]+= 1;
-
-            if (memo[targetId] <= linksOfNode) {
-                data.links.push({
-                    source: i,
-                    target: targetId
-                });
-            }
-        });
-    });
-    console.log(memo);
-    return data;
-}
+const margin = { top: 10, right: 30, bottom: 30, left: 40 },
+    width = 1300 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
 
 function renderSvg() {
 
@@ -76,17 +31,27 @@ function renderSvg() {
         .data<SimulationLinkDatum<MyNode>>(data.links)
         .enter()
         .append('line')
-        .style('stroke', '#aaa')
+        .style('stroke', '#388E3C')
+        .style('stroke-width', '1.5px')
 
+    const icon = (d) => icons.find((icon) => icon.type === d.type);
     // Initialize the nodes
     const node = g.selectAll('image')
         .data<MyNode>(data.nodes)
         .enter()
         .append('svg:image')
-        .attr('xlink:href', 'img/router_blue.svg')
-        .attr('width', '48')
-        .attr('height', '48')
-        .attr('transform', `translate(${-24}, ${-24})`);
+        .attr('xlink:href', (d) => {
+            return  icon(d).url;
+        })
+        .attr('width', (d) => {
+            return icon(d).width;
+        })
+        .attr('height', (d) => {
+            return  icon(d).height;
+        })
+        .attr('transform', (d) => {
+            return `translate(${-icon(d).height/2}, ${-icon(d).width/2})`
+        });
 
 
     simulateForce(data, function () {
@@ -187,18 +152,6 @@ function simulateForce(data, tickedFn) {
         .force('center', d3.forceCenter(width / 2, height / 2))
         .on('tick', tickedFn);
 }
-
-function getFormData(): MockDataOptions {
-    return {
-        numberOfNodes: Number((<HTMLInputElement>document.querySelector('#nodes')).value),
-        numberOfLinks: Number((<HTMLInputElement>document.querySelector('#links')).value)
-    }
-}
-
-// set the dimensions and margins of the graph
-const margin = { top: 10, right: 30, bottom: 30, left: 40 },
-    width = 1300 - margin.left - margin.right,
-    height = 800 - margin.top - margin.bottom;
 
 render();
 
