@@ -39,7 +39,9 @@ function renderSvg() {
     const node = g.selectAll('image')
         .data<MyNode>(data.nodes)
         .enter()
-        .append('svg:image')
+        .append('g');
+    
+    node.append('svg:image')
         .attr('xlink:href', (d) => {
             return  icon(d).url;
         })
@@ -53,7 +55,24 @@ function renderSvg() {
             return `translate(${-icon(d).height/2}, ${-icon(d).width/2})`
         });
 
+    const text = node.append('text')
+        .attr('y', (d) => -icon(d).height/2 - 8)
+        .attr('text-anchor', 'middle')
+        .text((d) => d.name);
 
+    const textWidths = text.nodes().map((n) => n.getBBox().width);
+    console.log(textWidths);
+
+    node.append('svg:image')
+        .attr('xlink:href', 'img/check_circle.svg')
+        .attr('y', (d) => -icon(d).height/2 - 21)
+        .attr('x', (d, i) => {
+            return -textWidths[i]/2 - 20;
+        })
+        .attr('width', '16')
+        .attr('height', '16');
+
+        
     simulateForce(data, function () {
         link
             .attr('x1', (d) => {
@@ -70,12 +89,9 @@ function renderSvg() {
             });
 
         node
-            .attr('x', (d) => {
-                return d.x;
-            })
-            .attr('y', (d) => {
-                return d.y;
-            });
+        .attr('transform', (d) => {
+            return `translate(${d.x}, ${d.y})`
+        });
     });
 
     d3.zoom().on('zoom', function () {

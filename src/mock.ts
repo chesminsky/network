@@ -3,7 +3,7 @@ import { MockedData } from './types';
 import { icons } from './icons';
 
 // util
-const randomStr = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+const randomStr = () => Math.random().toString(36).substring(2, Math.round(Math.random()* 15 + 15));
 const randInt = (max: number) => Math.floor(Math.random() * max);
 
 export function mockData(): MockedData {
