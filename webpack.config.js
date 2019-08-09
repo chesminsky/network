@@ -5,7 +5,8 @@ module.exports = {
   entry: './src/index.ts',
   plugins: [
     new CopyPlugin([
-      { from: 'src/*.html',  flatten: true }
+      { from: 'src/*.html',  flatten: true },
+      { from: 'src/img',  to:'img' }
     ]),
   ],
   module: {

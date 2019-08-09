@@ -68,8 +68,7 @@ function renderSvg() {
         .attr('height', height + margin.top + margin.bottom);
 
     const g = svg.append('g')
-        .attr('transform',
-            'translate(' + margin.left + ',' + margin.top + ')');
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     // Initialize the links
     const link = g
@@ -80,13 +79,15 @@ function renderSvg() {
         .style('stroke', '#aaa')
 
     // Initialize the nodes
-    const node = g
-        .selectAll('circle')
+    const node = g.selectAll('image')
         .data<MyNode>(data.nodes)
         .enter()
-        .append('circle')
-        .attr('r', RADIUS)
-        .style('fill', 'lightcoral')
+        .append('svg:image')
+        .attr('xlink:href', 'img/router_blue.svg')
+        .attr('width', '48')
+        .attr('height', '48')
+        .attr('transform', `translate(${-24}, ${-24})`);
+
 
     simulateForce(data, function () {
         link
@@ -104,10 +105,10 @@ function renderSvg() {
             });
 
         node
-            .attr('cx', (d) => {
+            .attr('x', (d) => {
                 return d.x;
             })
-            .attr('cy', (d) => {
+            .attr('y', (d) => {
                 return d.y;
             });
     });
