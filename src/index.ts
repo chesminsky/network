@@ -25,8 +25,7 @@ function mockData(): MockedData {
     };
 
     const opts = getFormData();
-
-    const noLinks = [];
+    const memo = {}
 
     times(opts.numberOfNodes, (i) => {
         data.nodes.push({
@@ -36,23 +35,24 @@ function mockData(): MockedData {
 
         const linksOfNode = randInt(opts.numberOfLinks);
 
-        if (!linksOfNode) {
-            noLinks.push(i);
-        } else {
-            times(linksOfNode, () => {
+        times(linksOfNode, () => {
 
-                const targetId = randInt(opts.numberOfNodes);
+            const targetId = randInt(opts.numberOfNodes);
 
-                if (!noLinks.includes(targetId)) {
-                    data.links.push({
-                        source: i,
-                        target: targetId
-                    });
-                }
-            });
-        }
+            if (!memo[targetId]) {
+                memo[targetId] = 0;
+            }
+            memo[targetId]+= 1;
+
+            if (memo[targetId] <= linksOfNode) {
+                data.links.push({
+                    source: i,
+                    target: targetId
+                });
+            }
+        });
     });
-
+    console.log(memo);
     return data;
 }
 
@@ -173,15 +173,16 @@ function render() {
 }
 
 function simulateForce(data, tickedFn) {
-    const chargeStr = Number((<HTMLInputElement>document.querySelector('#strength')).value);
+    const chargeForce = Number((<HTMLInputElement>document.querySelector('#strength')).value);
+    const collideForce = Number((<HTMLInputElement>document.querySelector('#collide')).value);
 
     d3.forceSimulation<MyNode>(data.nodes)
         .force('link', d3.forceLink()
             .id((d: MyNode) => { return String(d.id); })
             .links(data.links)
         )
-        .force('collide', d3.forceCollide(RADIUS * 2))
-        .force('charge', d3.forceManyBody().strength(-chargeStr))
+        .force('collide', d3.forceCollide(collideForce))
+        .force('charge', d3.forceManyBody().strength(-chargeForce))
         .force('center', d3.forceCenter(width / 2, height / 2))
         .on('tick', tickedFn);
 }
