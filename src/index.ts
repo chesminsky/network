@@ -61,7 +61,16 @@ function renderSvg() {
         .text((d) => d.name);
 
     const textWidths = text.nodes().map((n) => n.getBBox().width);
-    console.log(textWidths);
+    
+    node.append('rect')
+        .lower()
+        .attr('width', (d, i) => textWidths[i] + 20)
+        .attr('height', 18)
+        .attr('fill', 'white')
+        .attr('y', (d) => -icon(d).height/2 - 21)
+        .attr('x', (d, i) => {
+            return -textWidths[i]/2 - 20;
+        })
 
     node.append('svg:image')
         .attr('xlink:href', 'img/check_circle.svg')
