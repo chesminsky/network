@@ -16,7 +16,7 @@ export async function renderCanvas() {
     const checkImg = new Image();
     checkImg.src = 'img/check_circle.svg';
 
-    let transform;
+    let transform: d3.ZoomTransform;
 
     function draw() {
         if (transform) {
@@ -38,9 +38,12 @@ export async function renderCanvas() {
 
     function drawNode(d) {
 
-        // if (d.x < 0 || d.x > width || d.y < 0 || d.y > d.height) {
-        //     return;
-        // }
+        const x =  transform ? transform.applyX(d.x) : d.x;
+        const y = transform ? transform.applyY(d.y) : d.y;
+        
+        if (x < 0 || x > width || y < 0 || y > d.height) {
+            return;
+        }
 
         const icon = (d) => icons.find((icon) => icon.type === d.type);
         const i = icon(d);
@@ -64,6 +67,21 @@ export async function renderCanvas() {
     }
 
     function drawLink(l) {
+
+        const sourceX =  transform ? transform.applyX(l.source.x) : l.source.x;
+        const sourceY = transform ? transform.applyY(l.source.y) : l.source.y;
+        const targetX =  transform ? transform.applyX(l.target.x) : l.target.x;
+        const targetY =  transform ? transform.applyY(l.target.y) : l.target.y;
+
+        if (
+            (sourceX < 0 && targetX < 0) || 
+            (sourceX > width && targetX > width) || 
+            (sourceY < 0 && targetY < 0) || 
+            (sourceY > height && targetY > height)
+        ) {
+            return;
+        }
+
         ctx.strokeStyle = '#aaa';
         ctx.moveTo(l.source.x, l.source.y);
         ctx.lineTo(l.target.x, l.target.y);
