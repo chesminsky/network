@@ -55,6 +55,6 @@ export function mockData(): MockedData {
             }
         }
     });
-    console.log(memo);
+
     return data;
 }
