@@ -14,7 +14,9 @@ export function renderCanvas() {
     let transform;
 
     function draw() {
-        ctx.save();
+        if (transform) {
+            ctx.save();
+        }
         ctx.clearRect(0, 0, width, height);
         ctx.beginPath();
         if (transform) {
@@ -24,7 +26,9 @@ export function renderCanvas() {
 
         data.links.forEach(drawLink);
         data.nodes.forEach(drawNode);
-        ctx.restore();
+        if (transform) {
+            ctx.restore();
+        }
     }
 
     function drawNode(d) {
@@ -34,6 +38,23 @@ export function renderCanvas() {
         const img = new Image();
         img.src = i.url;
         ctx.drawImage(img, d.x - i.width/2, d.y - i.height/2);
+
+        ctx.font = '14px Arial';
+        const txtWidth = ctx.measureText(d.name).width;
+
+        // white bg
+        ctx.fillStyle = 'white';
+        ctx.fillRect(d.x - txtWidth/2 - 20, d.y - i.height/2 - 22, txtWidth + 25, 17);
+
+        // name
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.name, d.x + 5, d.y - i.height/2 - 8);
+
+        // check
+        const check = new Image();
+        check.src = 'img/check_circle.svg';
+        ctx.drawImage(check,  d.x - txtWidth/2 - 20, d.y - i.height/2 - 23);
     }
 
     function drawLink(l) {
