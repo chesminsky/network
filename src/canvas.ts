@@ -3,6 +3,7 @@ import { simulateForce } from './force';
 import { RADIUS } from './const';
 import { mockData } from './mock';
 import { Selection } from 'd3';
+import { icons } from './icons';
 
 export function renderCanvas() {
     const canvas = <Selection<Element, any, HTMLElement, any>>d3.select('#canvas').classed('hidden', false);
@@ -10,40 +11,42 @@ export function renderCanvas() {
     const height = Number(canvas.attr('height'));
     const ctx = (<HTMLCanvasElement>canvas.node()).getContext('2d');
     const data = mockData();
+    let transform;
 
     function draw() {
+        ctx.save();
         ctx.clearRect(0, 0, width, height);
         ctx.beginPath();
+        if (transform) {
+            ctx.translate(transform.x, transform.y);
+            ctx.scale(transform.k, transform.k);
+        }
 
-        ctx.strokeStyle = '#aaa';
         data.links.forEach(drawLink);
-        ctx.stroke();
-
         data.nodes.forEach(drawNode);
+        ctx.restore();
     }
 
     function drawNode(d) {
-        ctx.beginPath();
-        ctx.fillStyle = 'lightgreen';
-        ctx.moveTo(d.x, d.y);
-        ctx.arc(d.x, d.y, RADIUS, 0, Math.PI * 2);
-        ctx.fill();
+
+        const icon = (d) => icons.find((icon) => icon.type === d.type);
+        const i = icon(d);
+        const img = new Image();
+        img.src = i.url;
+        ctx.drawImage(img, d.x - i.width/2, d.y - i.height/2);
     }
 
     function drawLink(l) {
+        ctx.strokeStyle = '#aaa';
         ctx.moveTo(l.source.x, l.source.y);
         ctx.lineTo(l.target.x, l.target.y);
+        ctx.stroke();
     }
 
     simulateForce(data, draw);
 
     d3.zoom().on('zoom', function () {
-        const transform = d3.event.transform;
-        ctx.save();
-        ctx.clearRect(0, 0, width, height);
-        ctx.translate(transform.x, transform.y);
-        ctx.scale(transform.k, transform.k);
+        transform = d3.event.transform;
         draw();
-        ctx.restore();
     })(canvas);
 }
