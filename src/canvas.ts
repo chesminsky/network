@@ -4,13 +4,18 @@ import { RADIUS } from './const';
 import { mockData } from './mock';
 import { Selection } from 'd3';
 import { icons } from './icons';
+import { MockedData } from './types';
 
-export function renderCanvas() {
+export async function renderCanvas() {
     const canvas = <Selection<Element, any, HTMLElement, any>>d3.select('#canvas').classed('hidden', false);
     const width = Number(canvas.attr('width'));
     const height = Number(canvas.attr('height'));
     const ctx = (<HTMLCanvasElement>canvas.node()).getContext('2d');
     const data = mockData();
+    const images = await Promise.all(preloadImages(data));
+    const checkImg = new Image();
+    checkImg.src = 'img/check_circle.svg';
+
     let transform;
 
     function draw() {
@@ -33,10 +38,13 @@ export function renderCanvas() {
 
     function drawNode(d) {
 
+        // if (d.x < 0 || d.x > width || d.y < 0 || d.y > d.height) {
+        //     return;
+        // }
+
         const icon = (d) => icons.find((icon) => icon.type === d.type);
         const i = icon(d);
-        const img = new Image();
-        img.src = i.url;
+        const img = images.find((item) => item.id === d.id).img;
         ctx.drawImage(img, d.x - i.width/2, d.y - i.height/2);
 
         ctx.font = '14px Arial';
@@ -52,9 +60,7 @@ export function renderCanvas() {
         ctx.fillText(d.name, d.x + 5, d.y - i.height/2 - 8);
 
         // check
-        const check = new Image();
-        check.src = 'img/check_circle.svg';
-        ctx.drawImage(check,  d.x - txtWidth/2 - 20, d.y - i.height/2 - 23);
+        ctx.drawImage(checkImg,  d.x - txtWidth/2 - 20, d.y - i.height/2 - 23);
     }
 
     function drawLink(l) {
@@ -70,4 +76,26 @@ export function renderCanvas() {
         transform = d3.event.transform;
         draw();
     })(canvas);
+}
+
+
+function preloadImages(data: MockedData): Array<Promise<{id: number; img: HTMLImageElement}>> {
+    const promises = [];
+    const icon = (d) => icons.find((icon) => icon.type === d.type);
+    data.nodes.forEach((d) => {
+        const i = icon(d);
+        const img = new Image();
+        img.src = i.url;
+
+        const p = new Promise((res) => {
+            img.onload = () => res({
+                id: d.id,
+                img
+            });
+        });
+
+        promises.push(p);
+    });
+
+    return promises;
 }
