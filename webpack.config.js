@@ -6,6 +6,7 @@ module.exports = {
   plugins: [
     new CopyPlugin([
       { from: 'src/*.html',  flatten: true },
+      { from: 'src/*.js',  flatten: true },
       { from: 'src/img',  to:'img' }
     ]),
   ],
