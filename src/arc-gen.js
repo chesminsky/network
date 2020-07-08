@@ -39,37 +39,36 @@ const logAll = (...vars) => {
 const hypD = (...p) => Math.sqrt(Math.pow(p[1] - p[0], 2) + Math.pow(p[3] - p[2], 2));
 const hypL = (...l) => Math.sqrt(Math.pow(l[0], 2) + Math.pow(l[1], 2));
 
-const x1 = 100, y1 = 400, x3 = 500, y3 = 250, h = 100, K = 0.3;
-const mx = (x3 - x1) / 2 + x1;
-const my = (y3 - y1) / 2 + y1;
-const s = hypD(x1, x3, y1, y3) / 2;
-const alpha = Math.atan((y1 - y3) / (x3 - x1));
+const x1 = 100, y1 = 400, x2 = 500, y2 = 250, h = 100, K = 0.3;
+const mx = (x2 - x1) / 2 + x1;
+const my = (y2 - y1) / 2 + y1;
+const s = hypD(x1, x2, y1, y2) / 2;
+const alpha = Math.atan((y1 - y2) / (x2 - x1));
 const alphaDeg = alpha * 180 / Math.PI;
-const betta = Math.atan(h / s);
-const bettaDeg = betta * 180 / Math.PI;
+const beta = Math.atan(h / s);
+const betaDeg = beta * 180 / Math.PI;
 const l = hypL(s, h);
-const x2 =  l * Math.cos(alpha + betta) + x1;
-const y2 = y1 - l * Math.sin(alpha + betta);
+const mhx =  l * Math.cos(alpha + beta) + x1;
+const mhy = y1 - l * Math.sin(alpha + beta);
 
-const delta = 2 * betta;
-const cx1 = K * l * Math.cos(alpha + delta) + x1;
-const cx2 = x2 - K * l * Math.cos(alpha);
-const cy1 = y1 - K * l * Math.sin(alpha + delta);
-const cy2 = y2 + K * l * Math.sin(alpha);
+const cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
+const cx2 = mhx - K * l * Math.cos(alpha);
+const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
+const cy2 = mhy + K * l * Math.sin(alpha);
 
-logAll('x1', 'y1', 'x3', 'y3', 'mx', 'my', 's', 'l', 'alphaDeg', 'bettaDeg', 'x2', 'y2', 'cx1', 'cx2', 'cy1', 'cy2');
+logAll('x1', 'y1', 'x2', 'y2', 'mx', 'my', 's', 'l', 'alphaDeg', 'betaDeg', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
 
 // --------
 
-const line = makeLine(x1, x3, y1, y3);
-const lineH = makeLine(mx, x2, my, y2);
+const line = makeLine(x1, x2, y1, y2);
+const lineH = makeLine(mx, mhx, my, mhy);
 const c1 = makeCircle(x1, y1);
-const c2 = makeCircle(x2, y2);
-const c3 = makeCircle(x3, y3);
+const c2 = makeCircle(mhx, mhy);
+const c3 = makeCircle(x2, y2);
 const cm = makeCircle(mx, my);
 const cc1 = makeCircle(cx1, cy1);
 const cc2 = makeCircle(cx2, cy2);
-const path = makePath(x1, y1, x2, y2, cx1, cy1, cx2, cy2);
+const path = makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
 
 const svg = q('#svg');
 
