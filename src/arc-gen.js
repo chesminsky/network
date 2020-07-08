@@ -83,11 +83,21 @@ const createArc = (x1, x2, y1, y2, h, name) => {
 // ---
 
 createArc(100, 400, 100, 120, 40, 'hor');
-createArc(400, 100, 280, 300, 40, 'horInv');
-createArc(720, 700, 100, 400, 40, 'ver');
-createArc(920, 900, 400, 100, 40, 'verInv');
+createArc(400, 100, 300, 280, 40, 'horInv');
+createArc(100, 400, 400, 380, 40, 'hor');
+createArc(400, 100, 480, 500, 40, 'horInv');
+
+createArc(720, 700, 200, 600, 40, 'ver');
+createArc(800, 820, 600, 200, 40, 'verInv');
+createArc(900, 920, 200, 600, 40, 'ver');
+createArc(1020, 1000, 600, 200, 40, 'verInv');
 
 createArc(100, 400, 100, 120, -40, 'hor');
-createArc(400, 100, 280, 300, -40, 'horInv');
-createArc(720, 700, 100, 400, -40, 'ver');
-createArc(920, 900, 400, 100, -40, 'verInv');
+createArc(400, 100, 300, 280, -40, 'horInv');
+createArc(100, 400, 400, 380, -40, 'hor');
+createArc(400, 100, 480, 500, -40, 'horInv');
+
+createArc(720, 700, 200, 600, -40, 'ver');
+createArc(800, 820, 600, 200, -40, 'verInv');
+createArc(900, 920, 200, 600, -40, 'ver');
+createArc(1020, 1000, 600, 200, -40, 'verInv');
