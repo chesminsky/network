@@ -30,46 +30,63 @@ const appendAll = (container, ...elems) => {
     elems.forEach(e => container.appendChild(e)); 
 } 
 
-const logAll = (...vars) => {
-    vars.forEach(v => console.log(v, eval(v)));
-}
-
 // --------- 
 
 const hypD = (...p) => Math.sqrt(Math.pow(p[1] - p[0], 2) + Math.pow(p[3] - p[2], 2));
 const hypL = (...l) => Math.sqrt(Math.pow(l[0], 2) + Math.pow(l[1], 2));
 
-const x1 = 100, y1 = 400, x2 = 500, y2 = 250, h = 100, K = 0.3;
-const mx = (x2 - x1) / 2 + x1;
-const my = (y2 - y1) / 2 + y1;
-const s = hypD(x1, x2, y1, y2) / 2;
-const alpha = Math.atan((y1 - y2) / (x2 - x1));
-const alphaDeg = alpha * 180 / Math.PI;
-const beta = Math.atan(h / s);
-const betaDeg = beta * 180 / Math.PI;
-const l = hypL(s, h);
-const mhx =  l * Math.cos(alpha + beta) + x1;
-const mhy = y1 - l * Math.sin(alpha + beta);
+const createArc = (x1, x2, y1, y2, h) => {
+    const logAll = (...vars) => {
+        vars.forEach(v => console.log(v, eval(v)));
+    }
 
-const cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
-const cx2 = mhx - K * l * Math.cos(alpha);
-const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
-const cy2 = mhy + K * l * Math.sin(alpha);
+    const K = 0.3;
+    const mx = (x2 - x1) / 2 + x1;
+    const my = (y2 - y1) / 2 + y1;
+    const s = hypD(x1, x2, y1, y2) / 2;
+    const alpha = Math.atan((y1 - y2) / (x2 - x1));
+    const beta = Math.atan(h / s);
+    const l = hypL(s, h);
+    const mhx =  l * Math.cos(alpha + beta) + x1;
+    const mhy = y1 - l * Math.sin(alpha + beta);
+    
+    const cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
+    const cx2 = mhx - K * l * Math.cos(alpha);
+    const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
+    const cy2 = mhy + K * l * Math.sin(alpha);
+    
+    // logAll('x1', 'y1', 'x2', 'y2', 'mx', 'my', 's', 'l', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
 
-logAll('x1', 'y1', 'x2', 'y2', 'mx', 'my', 's', 'l', 'alphaDeg', 'betaDeg', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
+    const line = makeLine(x1, x2, y1, y2);
+    // const lineH = makeLine(mx, mhx, my, mhy);
+    // const c1 = makeCircle(x1, y1);
+    // const c2 = makeCircle(mhx, mhy);
+    // const c3 = makeCircle(x2, y2);
+    // const cm = makeCircle(mx, my);
+    // const cc1 = makeCircle(cx1, cy1);
+    // const cc2 = makeCircle(cx2, cy2);
+    const path = makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
 
-// --------
+    const svg = q('#svg');
 
-const line = makeLine(x1, x2, y1, y2);
-const lineH = makeLine(mx, mhx, my, mhy);
-const c1 = makeCircle(x1, y1);
-const c2 = makeCircle(mhx, mhy);
-const c3 = makeCircle(x2, y2);
-const cm = makeCircle(mx, my);
-const cc1 = makeCircle(cx1, cy1);
-const cc2 = makeCircle(cx2, cy2);
-const path = makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
+    appendAll(
+        svg,
+        line,
+        // lineH,
+        // c1,
+        // c2,
+        // c3,
+        // cm,
+        // cc1,
+        // cc2,
+        path
+    );
+}
 
-const svg = q('#svg');
 
-appendAll(svg, line, lineH, c1, c2, c3, cm, cc1, cc2, path);
+// ---
+
+createArc(100, 400, 400, 250, 40);
+createArc(100, 400, 400, 250, 20);
+createArc(100, 400, 400, 250, -20);
+createArc(100, 400, 400, 250, -40);
