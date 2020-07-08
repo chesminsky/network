@@ -37,26 +37,36 @@ export function renderSvg() {
 	const hypL = (...l) => Math.sqrt(Math.pow(l[0], 2) + Math.pow(l[1], 2));
 
 	const createArc = (x1, x2, y1, y2, h) => {
+		if (x2 > x1) {
+			h = -h;
+		} 
 		const K = 0.3;
 		const s = hypD(x1, x2, y1, y2) / 2;
 		const alpha = Math.atan((y1 - y2) / (x2 - x1));
 		const beta = Math.atan(h / s);
 		const l = hypL(s, h);
-		const mhx = l * Math.cos(alpha + beta) + x1;
-		const mhy = y1 - l * Math.sin(alpha + beta);
+		let mhx, mhy, cx1, cx2, cy1, cy2;
 
-		const cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
-		const cx2 = mhx - K * l * Math.cos(alpha);
-		const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
-		const cy2 = mhy + K * l * Math.sin(alpha);
+		if (x1 <= x2) {
+			mhx = l * Math.cos(alpha + beta) + x1;
+			mhy = y1 - l * Math.sin(alpha + beta);
+			cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
+			cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
+			cx2 = mhx - K * l * Math.cos(alpha);
+			cy2 = mhy + K * l * Math.sin(alpha);
+		} else {
+			mhx = l * Math.cos(alpha + beta) + x2;
+			mhy = y2 - l * Math.sin(alpha + beta);
+			cx1 = x1 - K * l * Math.cos(alpha - 2 * beta);
+			cy1 = y1 + K * l * Math.sin(alpha - 2 * beta);
+			cx2 = mhx + K * l * Math.cos(alpha);
+			cy2 = mhy - K * l * Math.sin(alpha);
+		}
+
 		return makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
 	};
 
-	const arc = g
-		.selectAll('path')
-		.data<SimulationLinkDatum<MyNode>>(data.links)
-		.enter()
-		.append('path');
+	const arc = g.selectAll('path').data<SimulationLinkDatum<MyNode>>(data.links).enter().append('path');
 
 	// --------------------
 
@@ -120,13 +130,16 @@ export function renderSvg() {
 			});
 
 		arc.attr('d', (d) => {
-			return createArc(
-				(<MyNode>d.source).x,
-				(<MyNode>d.target).x,
-				(<MyNode>d.source).y,
-				(<MyNode>d.target).y,
-				20
-			);
+			const x1 = (<MyNode>d.source).x,
+				x2 = (<MyNode>d.target).x,
+				y1 = (<MyNode>d.source).y,
+				y2 = (<MyNode>d.target).y;
+
+			if (x1 === x2 && y1 === y2) {
+				return;
+			}
+
+			return createArc(x1, x2, y1, y2, 20);
 		});
 
 		node.attr('transform', (d) => {
