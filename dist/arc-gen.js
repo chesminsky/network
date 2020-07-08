@@ -34,6 +34,7 @@ const appendAll = (container, ...elems) => {
 
 const hypD = (...p) => Math.sqrt(Math.pow(p[1] - p[0], 2) + Math.pow(p[3] - p[2], 2));
 const hypL = (...l) => Math.sqrt(Math.pow(l[0], 2) + Math.pow(l[1], 2));
+const toDeg = (rad) => rad * 180 / Math.PI;
 
 const createArc = (x1, x2, y1, y2, h, name) => {
 	const logAll = (...vars) => {
@@ -46,8 +47,14 @@ const createArc = (x1, x2, y1, y2, h, name) => {
 	const my = (y2 - y1) / 2 + y1;
 	const s = hypD(x1, x2, y1, y2) / 2;
 	const alpha = Math.atan((y1 - y2) / (x2 - x1));
-	const beta = Math.atan(h / s);
-	const l = hypL(s, h);
+    const beta = Math.atan(h / s);
+    const alphaD = toDeg(alpha);
+    const betaD = toDeg(beta);
+    const l = hypL(s, h);
+    const i = x1 > x2 ? -1 : 1;
+    const i2 = y1 > y2 ? -1 : 1;
+    const dx = x1 > x2 ? x2 : x1;
+    const dy = y1 > y2 ? y2 : y1;
 	const mhx = l * Math.cos(alpha + beta) + x1;
 	const mhy = y1 - l * Math.sin(alpha + beta);
 
@@ -56,7 +63,7 @@ const createArc = (x1, x2, y1, y2, h, name) => {
 	const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
 	const cy2 = mhy + K * l * Math.sin(alpha);
 
-	logAll('x1', 'y1', 'x2', 'y2', 'mx', 'my', 's', 'l', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
+	logAll('x1', 'y1', 'x2', 'y2', 'alphaD', 'betaD', 'mx', 'my', 's', 'l', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
 
 	const line = makeLine(x1, x2, y1, y2);
 	const lineH = makeLine(mx, mhx, my, mhy);
@@ -75,7 +82,12 @@ const createArc = (x1, x2, y1, y2, h, name) => {
 
 // ---
 
-createArc(100, 400, 100, 100, 40, 'hor');
-createArc(400, 100, 200, 200, 40, 'horInv');
-createArc(700, 700, 100, 400, 40, 'ver');
-createArc(900, 900, 400, 100, 40, 'verInv');
+createArc(100, 400, 100, 120, 40, 'hor');
+createArc(400, 100, 280, 300, 40, 'horInv');
+createArc(720, 700, 100, 400, 40, 'ver');
+createArc(920, 900, 400, 100, 40, 'verInv');
+
+createArc(100, 400, 100, 120, -40, 'hor');
+createArc(400, 100, 280, 300, -40, 'horInv');
+createArc(720, 700, 100, 400, -40, 'ver');
+createArc(920, 900, 400, 100, -40, 'verInv');
