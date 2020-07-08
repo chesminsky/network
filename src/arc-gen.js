@@ -27,7 +27,11 @@ const makePath = (startX, startY, endX, endY, cx1, cy1, cx2, cy2) => {
 };
 
 const appendAll = (container, ...elems) => {
-	elems.forEach((e) => container.appendChild(e));
+	elems.forEach((e) => {
+        if (e) {
+            container.appendChild(e)
+        }
+    });
 };
 
 // ---------
@@ -51,29 +55,49 @@ const createArc = (x1, x2, y1, y2, h, name) => {
     const alphaD = toDeg(alpha);
     const betaD = toDeg(beta);
     const l = hypL(s, h);
-    const i = x1 > x2 ? -1 : 1;
-    const i2 = y1 > y2 ? -1 : 1;
+    const ix = x1 > x2 ? -1 : 1;
+    const iy = y1 > y2 ? -1 : 1;
     const dx = x1 > x2 ? x2 : x1;
     const dy = y1 > y2 ? y2 : y1;
-	const mhx = l * Math.cos(alpha + beta) + x1;
-	const mhy = y1 - l * Math.sin(alpha + beta);
 
-	const cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
-	const cx2 = mhx - K * l * Math.cos(alpha);
-	const cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
-	const cy2 = mhy + K * l * Math.sin(alpha);
+    let mhx, mhy, cx1, cx2, cy1, cy2;
+
+    if (x1 <= x2) {
+        mhx = l * Math.cos(alpha + beta) + x1;
+        mhy = y1 - l * Math.sin(alpha + beta);
+    } else {
+        mhx = l * Math.cos(alpha + beta) + x2;
+        mhy = y2 - l * Math.sin(alpha + beta);
+    }
+
+
+    if (x1 <= x2) {
+        cx1 = K * l * Math.cos(alpha + 2 * beta) + x1;
+        cy1 = y1 - K * l * Math.sin(alpha + 2 * beta);
+        cx2 = mhx - K * l * Math.cos(alpha);
+        cy2 = mhy + K * l * Math.sin(alpha);
+    } else {
+        cx1 = x1 - K * l * Math.cos(alpha - 2 * beta);
+        cy1 = y1 + K * l * Math.sin(alpha - 2 * beta);
+        
+        cx2 = mhx + K * l * Math.cos(alpha);
+        cy2 = mhy - K * l * Math.sin(alpha);
+    }
+
+
 
 	logAll('x1', 'y1', 'x2', 'y2', 'alphaD', 'betaD', 'mx', 'my', 's', 'l', 'mhx', 'mhy', 'cx1', 'cx2', 'cy1', 'cy2');
 
 	const line = makeLine(x1, x2, y1, y2);
-	const lineH = makeLine(mx, mhx, my, mhy);
-	const c1 = makeCircle(x1, y1);
-	const c2 = makeCircle(mhx, mhy);
-	const c3 = makeCircle(x2, y2);
-	const cm = makeCircle(mx, my);
-	const cc1 = makeCircle(cx1, cy1);
-	const cc2 = makeCircle(cx2, cy2);
-	const path = makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
+    const lineH = makeLine(mx, mhx, my, mhy);
+    let c1,c2,c3,cm,cc1,cc2,path;
+	c1 = makeCircle(x1, y1);
+	c2 = makeCircle(mhx, mhy);
+	c3 = makeCircle(x2, y2);
+	cm = makeCircle(mx, my);
+	cc1 = makeCircle(cx1, cy1);
+	cc2 = makeCircle(cx2, cy2);
+	path = makePath(x1, y1, mhx, mhy, cx1, cy1, cx2, cy2);
 
 	const svg = q('#svg');
 
